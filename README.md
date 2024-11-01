@@ -7,12 +7,16 @@ A C++ module for Godot to interact with Stable-Diffusion.cpp.
 ☑ ~~URGENT A thread for the execution of both context loading and image generation~~<br>
 ☑ ~~LinuxBSD CPU build support~~<br>
 ☑ ~~LinuxBSD CuBLAS build support~~<br>
+☑ ~~NT CPU build support (MinGW)~~<br>
 
 ☐ LinuxBSD HipBLAS build support<br>
 
-☐ NT CPU build support<br>
-☐ NT CuBLAS build support<br>
-☐ NT HipBLAS build support<br>
+☐ NT CuBLAS build support (MinGW)<br>
+☐ NT HipBLAS build support (MinGW)<br>
+
+☐ NT CPU build support (VSC++)<br>
+☐ NT CuBLAS build support (VSC++)<br>
+☐ NT HipBLAS build support (VSC++)<br>
 
 ☐ MacOS CPU build support<br>
 ☐ MacOS Metal build support<br>

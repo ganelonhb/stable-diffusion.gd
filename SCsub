@@ -1,8 +1,12 @@
+import os
+import re
 from SCons.Errors import UserError
+import platform
 
 Import('env')
 
 PLATFORM = env['platform']
+ARCH = env['arch']
 supported = []
 
 print(PLATFORM)
@@ -12,6 +16,10 @@ elif PLATFORM == 'macos':
     supported = ['cpu', 'metal']
 
 backend = ARGUMENTS.get('backend', 'cpu')
+
+_libsdir = "/usr/x86_64-w64-mingw32/lib/" if platform.system() == "Linux" else 'C:\\ProgramData\\mingw64\\mingw64\\x86_64-w64-mingw32\\lib'
+
+libsdir = ARGUMENTS.get('mingw_libs', _libsdir)
 
 if backend not in supported:
     raise UserError(f'Error: unsupported backend "{backend}" for platform {PLATFORM}. Supported backends: {", ".join(supported)}')
@@ -35,21 +43,47 @@ if PLATFORM == 'linuxbsd':
 
         env.Append(LIBS=[env.File("libs/platform/linuxbsd/cuda/libstable-diffusion.a"), env.File("libs/platform/linuxbsd/cuda/libggml.a"), env.File("/usr/lib/libgomp.so"), env.File("/usr/lib/libpthread.a"), env.File("/opt/cuda/targets/x86_64-linux/lib/libcudart.so"), env.File("/opt/cuda/targets/x86_64-linux/lib/libcublas.so"), env.File("/opt/cuda/targets/x86_64-linux/lib/libculibos.a"), env.File("/opt/cuda/targets/x86_64-linux/lib/libcublasLt.so"), env.File("/opt/cuda/targets/x86_64-linux/lib/stubs/libcuda.so"), "dl", env.File("/usr/lib/librt.a"), "m"])
     elif backend == 'rocm' or backend == 'hipblas': # TODO: somebody with an AMD GPU figure out necessary libs to link with hipblas.
-        ...
+        raise UserError(f'Error: unsupported backend "{backend}" for {PLATFORM}. Not yet available')
 if PLATFORM == 'windows': # TODO: Windows platform
-    env_sd.Append(CCFLAGS=['-fexceptions'])
 
     if backend == 'cpu':
-        ...
+        env_sd.Append(CCFLAGS=['-fexceptions',])
+
+        env.Append(LIBPATH=["libs/platform/win/cpu/", libsdir])
+        system_libs = [ env.File(os.path.join(libsdir, f"lib{l}.a")) for l in [
+            "mingwthrd",
+            "kernel32",
+            "user32",
+            "gdi32",
+            "winspool",
+            "shell32",
+            "ole32",
+            "oleaut32",
+            "uuid",
+            "comdlg32",
+            "advapi32",
+
+            ]]
+
+        gomp = [env.File("C:\\ProgramData\\mingw64\\mingw64\\lib\\gcc\\x86_64-w64-mingw32\\13.2.0\\libgomp.a")]
+
+        libs = [env.File("libs/platform/win/cpu/libstable-diffusion.a"), env.File("libs/platform/win/cpu/libggml.a")] + gomp + system_libs
+
+        env.Append(LIBS=libs)
     elif backend == 'cuda' or backend == 'cublas':
-        ...
+        env.Append(LIBPATH=["libs/platform/win/cuda/"])
+
+        raise UserError(f'Error: unsupported backend "{backend}" for {PLATFORM}. Not yet available')
     elif backend == 'rocm' or backend == 'hipblas':
-        ...
+        env.Append(LIBPATH=["libs/platform/win/rocm/"])
+
+        raise UserError(f'Error: unsupported backend "{backend}" for {PLATFORM}. Not yet available')
+
 
 if PLATFORM == 'macos': # TODO: MacOS Platform
     env_sd.Append(CCFLAGS=['-fexceptions'])
 
     if backend == 'cpu':
-        ...
+        raise UserError(f'Error: unsupported backend "{backend}" for {PLATFORM}. Not yet available')
     elif backend == 'metal':
-        ...
+        raise UserError(f'Error: unsupported backend "{backend}" for {PLATFORM}. Not yet available')
